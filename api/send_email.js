@@ -1,21 +1,10 @@
+// api/send_email.js
 const express = require('express');
 const nodemailer = require('nodemailer');
-const cors = require('cors');
-require('dotenv').config();  // Load environment variables
-
-const app = express();
-app.use(express.json());
-
-// CORS configuration
-app.use(cors({
-  origin: 'https://pumnrdc.promate.tech',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true  // Allow credentials if needed
-}));
+const router = express.Router();
 
 // POST route for sending email
-app.post('./send_email.js', (req, res) => {
+router.post('/', (req, res) => {
   const { formData } = req.body;
   const { firstName, lastName, email, phoneNumber, Association, Equipment, bestTimeToContact, preferredMethodOfContact, additionalInformation } = formData;
 
@@ -28,11 +17,9 @@ app.post('./send_email.js', (req, res) => {
     },
   });
 
-  app.options('/api/send-email', cors());
-  
   const mailOptions = {
     from: process.env.GMAIL_USER,
-    to: 'pranavrathi07@gmail.com',  // Replace with recipient email
+    to: 'pranavrathi07@gmail.com', // Replace with recipient email
     subject: `New Contact Request from ${firstName} ${lastName}`,
     text: `
       Name: ${firstName} ${lastName}
@@ -43,7 +30,7 @@ app.post('./send_email.js', (req, res) => {
       Best Time to Contact: ${bestTimeToContact}
       Preferred Method of Contact: ${preferredMethodOfContact}
       Additional Information: ${additionalInformation}
-    `
+    `,
   };
 
   // Send email
@@ -56,8 +43,4 @@ app.post('./send_email.js', (req, res) => {
   });
 });
 
-// Start the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+module.exports = router;
