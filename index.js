@@ -22,13 +22,23 @@ const transporter = nodemailer.createTransport({
 
 // POST endpoint to send email
 app.post('/send-email', async (req, res) => {
-    const { subject, email, html } = req.body; // Destructure request body
+    const { formData } = req.body; // Expecting formData in the request body
+    const { firstName, lastName, email, phoneNumber, Association, Equipment, bestTimeToContact, preferredMethodOfContact, additionalInformation } = formData;
 
     const mailOptions = {
         from: process.env.GMAIL_USER, // Use the same email as above
-        to: email,
-        subject: subject,
-        html: html,
+        to: email, // Replace with recipient email
+        subject: `New Contact Request from ${firstName} ${lastName}`,
+        text: `
+            Name: ${firstName} ${lastName}
+            Email: ${email}
+            Phone Number: ${phoneNumber}
+            Association: ${Association}
+            Equipment: ${Equipment}
+            Best Time to Contact: ${bestTimeToContact}
+            Preferred Method of Contact: ${preferredMethodOfContact}
+            Additional Information: ${additionalInformation}
+        `,
     };
 
     try {
@@ -41,36 +51,7 @@ app.post('/send-email', async (req, res) => {
     }
 });
 
-// Function to send a test email
-const sendTestEmail = async () => {
-    const testEmailOptions = {
-        subject: 'Test Email',
-        html: '<html><p>This is a test email sent from the Node.js server.</p><p>This is another test.</p></html>',
-        email: 'jeetvani171@gmail.com', // Replace with the test recipient email
-    };
-
-    try {
-        let response = await fetch(`http://localhost:${port}/send-email`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(testEmailOptions),
-        });
-
-        if (response.ok) {
-            console.log('Test email sent successfully');
-        } else {
-            console.log('Failed to send test email');
-        }
-    } catch (error) {
-        console.error('Error in sending test email: ', error);
-    }
-};
-
 // Start the server
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
-    // Call the test function to send the email
-    sendTestEmail();
 });
