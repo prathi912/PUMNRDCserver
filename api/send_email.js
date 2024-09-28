@@ -28,6 +28,8 @@ app.post('./send_email.js', (req, res) => {
     },
   });
 
+  app.options('/api/send-email', cors());
+  
   const mailOptions = {
     from: process.env.GMAIL_USER,
     to: 'pranavrathi07@gmail.com',  // Replace with recipient email
