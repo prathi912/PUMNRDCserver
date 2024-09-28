@@ -21,7 +21,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // POST endpoint to send email
-app.post('/send-email', async (req, res) => {
+app.post('/send_email', async (req, res) => {
     const { formData } = req.body; // Expecting formData in the request body
     const { firstName, lastName, email, phoneNumber, association, equipment, bestTimeToContact, preferredMethodOfContact, additionalInformation } = formData;
 
