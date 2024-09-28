@@ -5,8 +5,9 @@ require('dotenv').config();  // Load the Gmail credentials from the .env file
 
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: 'https://pumnrdc.promate.tech' })); 
-app.use(cors());
+
+// Allow CORS from your frontend URL
+app.use(cors({ origin: 'https://pumnrdc.promate.tech' }));
 
 // POST route for sending email
 app.post('/send-email', (req, res) => {
