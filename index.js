@@ -15,10 +15,10 @@ app.use(cors({
 }));
 
 // POST route for sending email
-app.post('/api/send_email', async (req, res) => {
+app.post('/api/send_  email', async (req, res) => {
   try {
     const { formData } = req.body;
-    const { firstName, lastName, email, phoneNumber, Association, Equipment, bestTimeToContact, preferredMethodOfContact, additionalInformation } = formData;
+    const { firstName, lastName, email, phoneNumber, association, equipment, bestTimeToContact, preferredMethodOfContact, additionalInformation } = formData;
 
     // Nodemailer setup
     const transporter = nodemailer.createTransport({
