@@ -8,10 +8,10 @@ app.use(express.json());
 
 // Allow CORS from your frontend URL
 const corsOptions = {
-  origin: 'https://pumnrdc.promate.tech',
-  methods: ['GET', 'POST'],  // Allow specific methods
-  credentials: true,         // If you are sending cookies or authentication headers
-  allowedHeaders: ['Content-Type', 'Authorization']  // Add allowed headers
+  origin: 'https://pumnrdc.promate.tech',  // Allow this origin
+  methods: ['GET', 'POST', 'OPTIONS'],     // Allow specific methods
+  credentials: true,                       // Allow credentials
+  allowedHeaders: ['Content-Type', 'Authorization']  //
 };
 
 // Use CORS with the defined options
