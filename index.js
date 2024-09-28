@@ -8,7 +8,7 @@ app.use(express.json());
 
 // CORS configuration
 app.use(cors({
-  origin: 'https://pumnrdc.promate.tech',  // Allow requests from this origin
+  origin: '*',  // Allow requests from this origin
   methods: ['GET', 'POST'],                // Allow specific methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
   credentials: true  // Allow credentials if needed
