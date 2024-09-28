@@ -23,11 +23,11 @@ const transporter = nodemailer.createTransport({
 // POST endpoint to send email
 app.post('/send-email', async (req, res) => {
     const { formData } = req.body; // Expecting formData in the request body
-    const { firstName, lastName, email, phoneNumber, Association, Equipment, bestTimeToContact, preferredMethodOfContact, additionalInformation } = formData;
+    const { firstName, lastName, email, phoneNumber, association, equipment, bestTimeToContact, preferredMethodOfContact, additionalInformation } = formData;
 
     const mailOptions = {
         from: process.env.GMAIL_USER, // Use the same email as above
-        to: email, // Replace with recipient email
+        to: 'rathipranav07@gmail.com', // Replace with recipient email
         subject: `New Contact Request from ${firstName} ${lastName}`,
         text: `
             Name: ${firstName} ${lastName}
