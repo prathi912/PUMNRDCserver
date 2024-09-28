@@ -1,21 +1,14 @@
-require("dotenv").config();
-const express = require("express");
+const express = require('express');
 const app = express();
-const cors = require("cors");
-const connection = require("./db");
-const userRoutes = require("./routes/users");
-const authRoutes = require("./routes/auth");
+const cors = require('cors');
+require('dotenv').config();
 
-// database connection
-connection();
-
-// middlewares
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
-// routes
-app.use("/api/users", userRoutes);
-app.use("/api/auth", authRoutes);
+// Import the email route
+const sendEmail = require('./api/send_email');
+app.use('/api/send-email', sendEmail);
 
-const port = process.env.PORT || 8080;
-app.listen(port, console.log(`Listening on port ${port}...`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

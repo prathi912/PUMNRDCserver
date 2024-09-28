@@ -1,42 +1,36 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
-require('dotenv').config();  // Load the Gmail credentials from the .env file
+require('dotenv').config();  // Load environment variables
 
 const app = express();
 app.use(express.json());
 
-// Allow CORS from your frontend URL
-const corsOptions = {
-  origin: 'https://pumnrdc.promate.tech',  // Allow this origin
-  methods: ['GET', 'POST', 'OPTIONS'],     // Allow specific methods
-  credentials: true,                       // Allow credentials
-  allowedHeaders: ['Content-Type', 'Authorization']  //
-};
-
-// Use CORS with the defined options
-app.use(cors(corsOptions));
-
-// Handle preflight requests (OPTIONS method)
-app.options('/send-email', cors(corsOptions));
+// CORS configuration
+app.use(cors({
+  origin: 'https://pumnrdc.promate.tech',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true  // Allow credentials if needed
+}));
 
 // POST route for sending email
-app.post('/send-email', (req, res) => {
+app.post('/api/send-email', (req, res) => {
   const { formData } = req.body;
   const { firstName, lastName, email, phoneNumber, Association, Equipment, bestTimeToContact, preferredMethodOfContact, additionalInformation } = formData;
 
-  // Nodemailer setup using Gmail credentials from the .env file
+  // Nodemailer setup
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.GMAIL_USER,  // Your Gmail address from .env
-      pass: process.env.GMAIL_PASS,  // Your Gmail app-specific password from .env
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_PASS,
     },
   });
 
   const mailOptions = {
     from: process.env.GMAIL_USER,
-    to: 'pranavrathi07@gmail.com', // Recipient email
+    to: 'pranavrathi07@gmail.com',  // Replace with recipient email
     subject: `New Contact Request from ${firstName} ${lastName}`,
     text: `
       Name: ${firstName} ${lastName}
@@ -47,7 +41,7 @@ app.post('/send-email', (req, res) => {
       Best Time to Contact: ${bestTimeToContact}
       Preferred Method of Contact: ${preferredMethodOfContact}
       Additional Information: ${additionalInformation}
-    `,
+    `
   };
 
   // Send email
@@ -60,6 +54,8 @@ app.post('/send-email', (req, res) => {
   });
 });
 
-// Start server
+// Start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
