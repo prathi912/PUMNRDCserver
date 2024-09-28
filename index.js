@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 // Import the email route
-const sendEmail = require('./api/send_email');
+const sendEmail = require('/api/send_email');
 app.use('/api/send-email', sendEmail);
 
 const PORT = process.env.PORT || 5000;
