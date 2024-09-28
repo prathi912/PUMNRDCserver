@@ -4,7 +4,7 @@
       { "src": "send_email.js", "use": "@vercel/node" }
     ],
     "routes": [
-      { "src": "/api/send-email", "dest": "/send_email.js" }
-    ]
+  { "src": "/api/send-email", "dest": "/send_email.js" }
+]
   }
   
