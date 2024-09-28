@@ -15,7 +15,7 @@ app.use(cors({
 }));
 
 // POST route for sending email
-app.post('/api/send-email', async (req, res) => {
+app.post('/api/send_email', async (req, res) => {
   try {
     const { formData } = req.body;
     const { firstName, lastName, email, phoneNumber, Association, Equipment, bestTimeToContact, preferredMethodOfContact, additionalInformation } = formData;
