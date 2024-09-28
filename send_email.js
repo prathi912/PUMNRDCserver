@@ -7,12 +7,18 @@ const app = express();
 app.use(express.json());
 
 // Allow CORS from your frontend URL
-app.use(cors({ 
+const corsOptions = {
   origin: 'https://pumnrdc.promate.tech',
-  methods: ['GET', 'POST'],  // Add this to allow specific methods
+  methods: ['GET', 'POST'],  // Allow specific methods
   credentials: true,         // If you are sending cookies or authentication headers
   allowedHeaders: ['Content-Type', 'Authorization']  // Add allowed headers
-}));
+};
+
+// Use CORS with the defined options
+app.use(cors(corsOptions));
+
+// Handle preflight requests (OPTIONS method)
+app.options('/send-email', cors(corsOptions));
 
 // POST route for sending email
 app.post('/send-email', (req, res) => {
