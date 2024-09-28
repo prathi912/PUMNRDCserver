@@ -33,8 +33,8 @@ app.post('/send-email', async (req, res) => {
             Name: ${firstName} ${lastName}
             Email: ${email}
             Phone Number: ${phoneNumber}
-            Association: ${association}
-            Equipment: ${equipment}
+            association: ${association}
+            equipment: ${equipment}
             Best Time to Contact: ${bestTimeToContact}
             Preferred Method of Contact: ${preferredMethodOfContact}
             Additional Information: ${additionalInformation}
