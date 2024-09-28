@@ -37,8 +37,8 @@ app.post('/api/send-email', async (req, res) => {
         Name: ${firstName} ${lastName}
         Email: ${email}
         Phone Number: ${phoneNumber}
-        Association: ${Association}
-        Equipment: ${Equipment}
+        Association: ${association}
+        Equipment: ${equipment}
         Best Time to Contact: ${bestTimeToContact}
         Preferred Method of Contact: ${preferredMethodOfContact}
         Additional Information: ${additionalInformation}
