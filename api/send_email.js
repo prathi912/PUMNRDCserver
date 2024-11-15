@@ -7,7 +7,19 @@ const winston = require('winston');
 router.post('/', async (req, res) => {
   try {
     const { formData } = req.body;
-    const { firstName, lastName, email, phoneNumber, Association, Equipment, bestTimeToContact, preferredMethodOfContact, additionalInformation } = formData;
+    const {
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      association,
+      equipment,
+      selectedServices,
+      additionalServices,
+      bestTimeToContact,
+      preferredMethodOfContact,
+      additionalInformation,
+    } = formData;
 
     // Nodemailer setup
     const transporter = nodemailer.createTransport({
@@ -28,6 +40,8 @@ router.post('/', async (req, res) => {
         Phone Number: ${phoneNumber}
         Association: ${association}
         Equipment: ${equipment}
+        Selected Services: ${selectedServices.join(', ')}
+        Additional Services: ${additionalServices.join(', ')}
         Best Time to Contact: ${bestTimeToContact}
         Preferred Method of Contact: ${preferredMethodOfContact}
         Additional Information: ${additionalInformation}
