@@ -1,57 +1,71 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
-const cors = require('cors');
-
+const cors = require('cors'); // Import CORS
+const winston = require('winston');
 const app = express();
-const port = process.env.PORT || 3000; // Use environment variable for port
 
-// Middleware
+// Middleware for parsing JSON request bodies
 app.use(express.json());
-app.use(cors({
-    origin: "*", // Allow all origins (for production, specify allowed origins)
-}));
 
-// Set up Nodemailer transporter
-const transporter = nodemailer.createTransport({
-    service: 'gmail', // Use Gmail as the email service
-    auth: {
-        user: process.env.GMAIL_USER, // Load from environment variable
-        pass: process.env.GMAIL_PASS, // Load from environment variable (app password)
-    },
-});
+// Enable CORS for all routes
+app.use(cors()); // Allows all origins (can configure for specific origins)
 
-// POST endpoint to send email
-app.post('/send_email', async (req, res) => {
-    const { formData } = req.body; // Expecting formData in the request body
-    const { firstName, lastName, email, phoneNumber, association, equipment, bestTimeToContact, preferredMethodOfContact, additionalInformation } = formData;
+app.post('/api/send_email', async (req, res) => {
+  try {
+    const { formData } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      association,
+      equipment,
+      selectedServices,
+      additionalServices,
+      bestTimeToContact,
+      preferredMethodOfContact,
+      additionalInformation,
+    } = formData;
+
+    // Nodemailer setup
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS,
+      },
+    });
 
     const mailOptions = {
-        from: process.env.GMAIL_USER, // Use the same email as above
-        to: 'rathipranav07@gmail.com', // Replace with recipient email
-        subject: `New Contact Request from ${firstName} ${lastName}`,
-        text: `
-            Name: ${firstName} ${lastName}
-            Email: ${email}
-            Phone Number: ${phoneNumber}
-            association: ${association}
-            equipment: ${equipment}
-            Best Time to Contact: ${bestTimeToContact}
-            Preferred Method of Contact: ${preferredMethodOfContact}
-            Additional Information: ${additionalInformation}
-        `,
+      from: process.env.GMAIL_USER,
+      to: 'pranavrathi07@gmail.com', // Replace with recipient email
+      subject: `New Contact Request from ${firstName} ${lastName}`,
+      text: `
+        Name: ${firstName} ${lastName}
+        Email: ${email}
+        Phone Number: ${phoneNumber}
+        Association: ${association}
+        Equipment: ${equipment}
+        Selected Services: ${selectedServices.join(', ')}
+        Additional Services: ${additionalServices.join(', ')}
+        Best Time to Contact: ${bestTimeToContact}
+        Preferred Method of Contact: ${preferredMethodOfContact}
+        Additional Information: ${additionalInformation}
+      `,
     };
 
-    try {
-        let info = await transporter.sendMail(mailOptions); // Send the email
-        console.log('Email sent: ' + info.response);
-        res.status(200).send('Email sent successfully');
-    } catch (error) {
-        console.error('Error sending email: ', error); // Log the error
-        res.status(500).send('Failed to send email');
-    }
+    // Send email
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: 'Email sent successfully' });
+  } catch (error) {
+    // Log error and respond
+    winston.error('Error sending email:', error);
+    res.status(500).json({ message: 'Failed to send email' });
+  }
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+// Start server
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
