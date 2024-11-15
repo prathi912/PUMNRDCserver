@@ -10,6 +10,15 @@ app.use(express.json());
 // Enable CORS for all routes
 app.use(cors()); // Allows all origins (can configure for specific origins)
 
+const corsOptions = {
+    origin: 'https://pumnrdc-next-pranavrathi07.vercel.app', // Allow only this origin
+    methods: 'GET,POST', // Allow only these methods
+    allowedHeaders: 'Content-Type', // Allow these headers
+  };
+  
+  app.use(cors(corsOptions)); // Use CORS with specific options
+  
+
 app.post('/api/send_email', async (req, res) => {
   try {
     const { formData } = req.body;
