@@ -1,51 +1,32 @@
-const express = require("express");
-const multer = require("multer");
-const nodemailer = require("nodemailer");
-const winston = require("winston");
-const fs = require("fs");
-
+const express = require('express');
+const nodemailer = require('nodemailer');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const router = express.Router();
+const winston = require('winston');
 
-// Multer setup for file uploads
+// Multer setup for handling file uploads
 const upload = multer({
-  dest: "uploads/",
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
+  dest: 'uploads/', // Temporary directory to store files
+  limits: {
+    fileSize: 5 * 1024 * 1024, // Limit file size to 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only JPG, PNG, and PDF files are allowed'));
+    }
+  },
 });
 
-// Logger setup
-const logger = winston.createLogger({
-  level: "error",
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.File({ filename: "error.log" }),
-    new winston.transports.Console(),
-  ],
-});
-
-// POST route for sending email with file upload
-router.post("/", upload.single("idProof"), async (req, res) => {
+// POST route for sending email
+router.post('/', upload.single('idProof'), async (req, res) => {
   try {
-    // Log the entire request body for debugging
-    logger.info("Received request body", { body: req.body });
-
-    // Ensure formData exists in the request body
-    if (!req.body.formData) {
-      logger.error("Form data is missing", { body: req.body });
-      return res.status(400).json({ message: "Form data is missing." });
-    }
-
-    // Parse JSON-formatted formData
-    let parsedFormData;
-    try {
-      parsedFormData = JSON.parse(req.body.formData);
-    } catch (error) {
-      logger.error("Invalid form data format", { error: error.message, body: req.body });
-      return res.status(400).json({ message: "Invalid form data format." });
-    }
-
+    const { formData } = req.body;
+    const parsedFormData = JSON.parse(formData); // Parse the JSON string into an object
     const {
       firstName,
       lastName,
@@ -60,50 +41,44 @@ router.post("/", upload.single("idProof"), async (req, res) => {
       additionalInformation,
     } = parsedFormData;
 
-    // Validate required fields
-    if (!firstName || !email || !equipment) {
-      logger.error("Required fields are missing", { parsedFormData });
-      return res.status(400).json({ message: "Required fields are missing." });
+    let idProofPath = null;
+
+    // Process the uploaded file if it exists
+    if (req.file) {
+      idProofPath = path.resolve(req.file.path); // Full path to the uploaded file
     }
 
-    // Validate uploaded file type
-    if (req.file && !["image/jpeg", "image/png", "application/pdf"].includes(req.file.mimetype)) {
-      await fs.promises.unlink(req.file.path); // Delete invalid file
-      logger.error("Invalid file type", { mimetype: req.file.mimetype });
-      return res.status(400).json({ message: "Invalid file type. Only JPG, PNG, and PDF are allowed." });
-    }
-
-    // Setup Nodemailer
+    // Nodemailer setup
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASS,
       },
     });
 
-    // Prepare email options
+    // Prepare the email content
     const mailOptions = {
       from: process.env.GMAIL_USER,
-      to: "pranavrathi07@gmail.com",
+      to: 'pranavrathi07@gmail.com', // Replace with recipient email
       subject: `New Contact Request from ${firstName} ${lastName}`,
       text: `
         Name: ${firstName} ${lastName}
         Email: ${email}
-        Phone Number: ${phoneNumber || "Not provided"}
-        Association: ${association || "Not provided"}
+        Phone Number: ${phoneNumber}
+        Association: ${association}
         Equipment: ${equipment}
-        Selected Services: ${selectedServices?.join(", ") || "None"}
-        Additional Services: ${additionalServices?.join(", ") || "None"}
-        Best Time to Contact: ${bestTimeToContact || "Not provided"}
-        Preferred Method of Contact: ${preferredMethodOfContact || "Not provided"}
-        Additional Information: ${additionalInformation || "None"}
+        Selected Services: ${selectedServices.join(', ')}
+        Additional Services: ${additionalServices.join(', ')}
+        Best Time to Contact: ${bestTimeToContact}
+        Preferred Method of Contact: ${preferredMethodOfContact}
+        Additional Information: ${additionalInformation}
       `,
-      attachments: req.file
+      attachments: idProofPath
         ? [
             {
               filename: req.file.originalname,
-              path: req.file.path,
+              path: idProofPath,
             },
           ]
         : [],
@@ -112,23 +87,16 @@ router.post("/", upload.single("idProof"), async (req, res) => {
     // Send email
     await transporter.sendMail(mailOptions);
 
-    // Clean up uploaded file
-    if (req.file) {
-      await fs.promises.unlink(req.file.path);
+    // Cleanup: Delete the uploaded file after sending email
+    if (idProofPath) {
+      fs.unlinkSync(idProofPath);
     }
 
-    res.status(200).json({ message: "Email sent successfully" });
+    res.status(200).json({ message: 'Email sent successfully' });
   } catch (error) {
-    logger.error("Error handling email request", { error: error.message, stack: error.stack, body: req.body });
-
-    // Cleanup uploaded file if an error occurs
-    if (req.file) {
-      await fs.promises.unlink(req.file.path).catch((err) => {
-        logger.error("Failed to delete uploaded file:", err);
-      });
-    }
-
-    res.status(500).json({ message: "Failed to send email" });
+    // Log error and respond
+    winston.error('Error sending email:', error);
+    res.status(500).json({ message: 'Failed to send email', error: error.message });
   }
 });
 
