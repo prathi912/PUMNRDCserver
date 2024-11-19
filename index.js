@@ -8,12 +8,13 @@ const app = express();
 const corsOptions = {
   origin: 'https://pumnrdc-next-pranavrathi07.vercel.app', // Allow only the frontend domain
   methods: 'GET,POST', // Allow only these methods
-  allowedHeaders: 'Content-Type', // Allow these headers
+  allowedHeaders: 'Content-Type, Authorization', // Allow these headers
 };
 app.use(cors(corsOptions));
 
 // Use the send email router
 app.use('/api/send_email', sendEmailRoute);
+
 
 // Start the server
 const PORT = process.env.PORT || 3001;
