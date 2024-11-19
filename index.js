@@ -1,6 +1,6 @@
 const express = require('express');
 const sendEmailRoute = require('./api/send_email');
-
+const paymentRoute = require('./api/payment'); 
 const app = express();
 
 // Manually set CORS headers for all routes
@@ -17,6 +17,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/api/payment', paymentRoute);
 app.use('/api/send_email', sendEmailRoute);
 
 const PORT = process.env.PORT || 3001;
