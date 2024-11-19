@@ -30,11 +30,18 @@ router.post("/", upload.single("idProof"), async (req, res) => {
   try {
     // Ensure formData exists in the request body
     if (!req.body.formData) {
+      logger.error("Form data is missing");
       return res.status(400).json({ message: "Form data is missing" });
     }
 
     // Parse JSON-formatted formData
-    const formData = JSON.parse(req.body.formData);
+    let parsedFormData;
+    try {
+      parsedFormData = JSON.parse(req.body.formData);
+    } catch (error) {
+      logger.error("Invalid form data format");
+      return res.status(400).json({ message: "Invalid form data format" });
+    }
 
     const {
       firstName,
@@ -48,16 +55,18 @@ router.post("/", upload.single("idProof"), async (req, res) => {
       bestTimeToContact,
       preferredMethodOfContact,
       additionalInformation,
-    } = formData;
+    } = parsedFormData;
 
     // Validate required fields
     if (!firstName || !email || !equipment) {
+      logger.error("Required fields are missing");
       return res.status(400).json({ message: "Required fields are missing" });
     }
 
     // Validate uploaded file type
     if (req.file && !["image/jpeg", "image/png", "application/pdf"].includes(req.file.mimetype)) {
       await fs.promises.unlink(req.file.path); // Delete invalid file
+      logger.error("Invalid file type");
       return res.status(400).json({ message: "Invalid file type. Only JPG, PNG, and PDF are allowed." });
     }
 
