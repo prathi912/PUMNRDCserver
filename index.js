@@ -17,7 +17,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/api/payment', paymentRoute);
+app.use("/api/payment", require("./api/generate"));
 app.use('/api/send_email', sendEmailRoute);
 
 const PORT = process.env.PORT || 3001;
