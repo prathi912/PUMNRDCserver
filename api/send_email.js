@@ -1,14 +1,12 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const router = express.Router();
 const winston = require('winston');
+const router = express.Router();
 
-// Multer setup for handling file uploads
+// Multer setup for memory storage
 const upload = multer({
-  dest: 'uploads/', // Temporary directory to store files
+  storage: multer.memoryStorage(), // Store files in memory as Buffers
   limits: {
     fileSize: 5 * 1024 * 1024, // Limit file size to 5MB
   },
@@ -41,11 +39,13 @@ router.post('/', upload.single('idProof'), async (req, res) => {
       additionalInformation,
     } = parsedFormData;
 
-    let idProofPath = null;
+    let fileBuffer = null;
+    let fileName = null;
 
     // Process the uploaded file if it exists
     if (req.file) {
-      idProofPath = path.resolve(req.file.path); // Full path to the uploaded file
+      fileBuffer = req.file.buffer; // File content as Buffer
+      fileName = req.file.originalname; // Original file name
     }
 
     // Nodemailer setup
@@ -74,11 +74,11 @@ router.post('/', upload.single('idProof'), async (req, res) => {
         Preferred Method of Contact: ${preferredMethodOfContact}
         Additional Information: ${additionalInformation}
       `,
-      attachments: idProofPath
+      attachments: fileBuffer
         ? [
             {
-              filename: req.file.originalname,
-              path: idProofPath,
+              filename: fileName,
+              content: fileBuffer, // Attach the file from memory buffer
             },
           ]
         : [],
@@ -86,11 +86,6 @@ router.post('/', upload.single('idProof'), async (req, res) => {
 
     // Send email
     await transporter.sendMail(mailOptions);
-
-    // Cleanup: Delete the uploaded file after sending email
-    if (idProofPath) {
-      fs.unlinkSync(idProofPath);
-    }
 
     res.status(200).json({ message: 'Email sent successfully' });
   } catch (error) {
