@@ -2,51 +2,53 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 
-// Replace with your Easebuzz credentials
-const EASEBUZZ_API_KEY = process.env.EASEBUZZ_API_KEY; // Your Easebuzz API key
-const EASEBUZZ_SALT_KEY = process.env.EASEBUZZ_SALT_KEY; // Your Easebuzz secret key
-const EASEBUZZ_PAYMENT_LINK_API = "https://www.easebuzz.in/api/v1/transaction/generate-link"; // Easebuzz API endpoint
+// Access environment variables
+const EASEBUZZ_API_KEY = process.env.EASEBUZZ_API_KEY;
+const EASEBUZZ_SALT_KEY = process.env.EASEBUZZ_SALT_KEY;
+const EASEBUZZ_PAYMENT_LINK_API = "https://www.easebuzz.in/api/v1/transaction/initiate";
 
 router.post("/generate", async (req, res) => {
   const { amount, email, phone } = req.body;
 
-  // Validate the input
   if (!amount || !email || !phone) {
     return res.status(400).json({ error: "Amount, email, and phone are required." });
   }
 
   try {
-    // Prepare the data to send to Easebuzz API
-    const paymentData = {
-      amount: amount,
-      email: email,
-      phone: phone,
-      order_id: `ORD-${Date.now()}`, // Unique order ID (you can customize this)
-      return_url: "https://yourdomain.com/payment-success", // Replace with your success URL
-      cancel_url: "https://yourdomain.com/payment-failure", // Replace with your failure URL
+    // Prepare data for Easebuzz API
+    const txnId = `TXN-${Date.now()}`;
+    const postData = {
+      key: EASEBUZZ_API_KEY,
+      txnid: txnId,
+      amount,
+      firstname: "User", // Replace with the customer's name if available
+      email,
+      phone,
+      productinfo: "Payment for R&D Services",
+      surl: "https://yourdomain.com/payment-success", // Success URL
+      furl: "https://yourdomain.com/payment-failure", // Failure URL
+      salt: EASEBUZZ_SALT_KEY, // This is needed to calculate the hash
     };
 
-    // Make the request to Easebuzz API to generate the payment link
-    const response = await axios.post(
-      EASEBUZZ_PAYMENT_LINK_API,
-      paymentData,
-      {
-        headers: {
-          "Authorization": `Bearer ${EASEBUZZ_API_KEY}`,
-          "Content-Type": "application/json",
-        }
-      }
-    );
+    // Calculate the hash for request
+    const hashString = `${EASEBUZZ_API_KEY}|${txnId}|${amount}|Payment for R&D Services|User|${email}|||||||||||${EASEBUZZ_SALT_KEY}`;
+    const crypto = require("crypto");
+    const hash = crypto.createHash("sha512").update(hashString).digest("hex");
 
-    // Check for response and return the payment link
-    const paymentLink = response.data?.payment_link;
+    postData.hash = hash;
 
-    if (!paymentLink) {
-      throw new Error("Payment link generation failed.");
+    // Send API request to Easebuzz
+    const response = await axios.post(EASEBUZZ_PAYMENT_LINK_API, postData, {
+      headers: { "Content-Type": "application/json" },
+    });
+
+    // Return the transaction ID and payment link
+    const { payment_link } = response.data;
+    if (payment_link) {
+      res.json({ txnId, easebuzzAccessKey: EASEBUZZ_API_KEY, paymentLink: payment_link });
+    } else {
+      res.status(500).json({ error: "Failed to generate payment link." });
     }
-
-    // Send the payment link back to the frontend
-    res.json({ link: paymentLink });
   } catch (error) {
     console.error("Error generating payment link:", error.message);
     res.status(500).json({ error: "Failed to generate payment link." });
