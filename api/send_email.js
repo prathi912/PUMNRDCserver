@@ -70,7 +70,7 @@ router.post('/', upload.single('idProof'), async (req, res) => {
     // Prepare the email content
     const mailOptions = {
       from: process.env.GMAIL_USER,
-      to: 'pranavrathi07@gmail.com', // Replace with recipient email
+      to: 'micronanornd@paruluniversity.ac.in', // Replace with recipient email
       subject: `New Contact Request from ${firstName} ${lastName}`,
       text: `
         Name: ${firstName} ${lastName}
