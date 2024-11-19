@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const sendEmailRoute = require('./send_email'); // Import the send email route
+const sendEmailRoute = require('./api/send_email'); // Import the send email route
 
 const app = express();
 
