@@ -9,14 +9,38 @@ const router = express.Router();
 
 // Multer setup for file uploads
 const upload = multer({
-  dest: 'uploads/', // Temporary storage for uploaded files
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB file size limit
+  dest: 'uploads/',
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
+});
+
+// Logger setup
+const logger = winston.createLogger({
+  level: 'error',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({ filename: 'error.log' }),
+    new winston.transports.Console(),
+  ],
 });
 
 // POST route for sending email with file upload
 router.post('/', upload.single('idProof'), async (req, res) => {
   try {
-    const { formData } = req.body;
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+      return res.status(500).json({ message: 'Email credentials are not configured' });
+    }
+
+    // Validate and parse formData
+    let parsedFormData;
+    try {
+      parsedFormData = JSON.parse(req.body.formData);
+    } catch (error) {
+      return res.status(400).json({ message: 'Invalid form data format' });
+    }
+
     const {
       firstName,
       lastName,
@@ -29,7 +53,18 @@ router.post('/', upload.single('idProof'), async (req, res) => {
       bestTimeToContact,
       preferredMethodOfContact,
       additionalInformation,
-    } = JSON.parse(formData); // Parse formData string to JSON
+    } = parsedFormData;
+
+    if (!firstName || !email || !equipment) {
+      return res.status(400).json({ message: 'Required fields are missing' });
+    }
+
+    // File validation
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (req.file && !allowedMimeTypes.includes(req.file.mimetype)) {
+      await fs.promises.unlink(req.file.path);
+      return res.status(400).json({ message: 'Invalid file type. Only JPG, PNG, and PDF are allowed.' });
+    }
 
     // Nodemailer setup
     const transporter = nodemailer.createTransport({
@@ -40,10 +75,10 @@ router.post('/', upload.single('idProof'), async (req, res) => {
       },
     });
 
-    // Prepare mail options
+    // Prepare email
     const mailOptions = {
       from: process.env.GMAIL_USER,
-      to: 'pranavrathi07@gmail.com', // Replace with recipient email
+      to: 'pranavrathi07@gmail.com',
       subject: `New Contact Request from ${firstName} ${lastName}`,
       text: `
         Name: ${firstName} ${lastName}
@@ -57,33 +92,30 @@ router.post('/', upload.single('idProof'), async (req, res) => {
         Preferred Method of Contact: ${preferredMethodOfContact || 'Not provided'}
         Additional Information: ${additionalInformation || 'None'}
       `,
-      // Attach the uploaded file if it exists
       attachments: req.file
         ? [
             {
               filename: req.file.originalname,
-              path: req.file.path,
+              path: path.join(__dirname, '..', req.file.path),
             },
           ]
         : [],
     };
 
-    // Send email
     await transporter.sendMail(mailOptions);
 
-    // Delete the temporary uploaded file
     if (req.file) {
-      fs.unlinkSync(req.file.path);
+      await fs.promises.unlink(req.file.path);
     }
 
     res.status(200).json({ message: 'Email sent successfully' });
   } catch (error) {
-    // Log error and respond
-    winston.error('Error sending email:', error);
+    logger.error('Error handling email request:', error);
 
-    // Delete the temporary uploaded file if an error occurs
     if (req.file) {
-      fs.unlinkSync(req.file.path);
+      await fs.promises.unlink(req.file.path).catch((err) => {
+        logger.error('Failed to delete uploaded file:', err);
+      });
     }
 
     res.status(500).json({ message: 'Failed to send email' });
