@@ -1,4 +1,3 @@
-// api/payment.js
 const express = require('express');
 const crypto = require('crypto');
 
@@ -22,7 +21,7 @@ router.post('/generate', (req, res) => {
   // Save payment details in the store (this would be a DB in a real app)
   paymentDataStore[uniqueKey] = { amount, email, phone };
 
-  // Create the payment URL
+  // Create the payment URL (replace with the appropriate front-end URL for your app)
   const paymentUrl = `https://pumnrdc-next-pranavrathi07.vercel.app/payment/${uniqueKey}`;
 
   // Respond with the generated link
