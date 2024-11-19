@@ -59,9 +59,11 @@ router.post("/", upload.single("idProof"), async (req, res) => {
 
     // Validate required fields
     if (!firstName || !email || !equipment) {
-      logger.error("Required fields are missing");
+      logger.error("Required fields are missing", { parsedFormData });
       return res.status(400).json({ message: "Required fields are missing" });
     }
+
+
 
     // Validate uploaded file type
     if (req.file && !["image/jpeg", "image/png", "application/pdf"].includes(req.file.mimetype)) {
@@ -116,7 +118,7 @@ router.post("/", upload.single("idProof"), async (req, res) => {
 
     res.status(200).json({ message: "Email sent successfully" });
   } catch (error) {
-    logger.error("Error handling email request:", error);
+    logger.error("Error handling email request", { error: error.message, stack: error.stack, body: req.body });
 
     // Cleanup uploaded file if an error occurs
     if (req.file) {
