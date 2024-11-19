@@ -4,11 +4,10 @@ const multer = require('multer');
 const bodyParser = require('body-parser');
 const winston = require('winston');
 const router = express.Router();
-const app = express(); // Make sure to declare 'app'
 
 // Body parser middleware for parsing JSON and URL-encoded bodies
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({ extended: true }));
 
 // Multer setup for memory storage
 const upload = multer({
@@ -106,14 +105,4 @@ router.post('/', upload.single('idProof'), async (req, res) => {
   }
 });
 
-// Export the router
 module.exports = router;
-
-// Ensure to use the router in your main application file
-app.use('/send-email', router);
-
-// Start the server (ensure the PORT is defined in your environment variables or set a default value)
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
