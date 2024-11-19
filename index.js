@@ -1,6 +1,8 @@
 const express = require('express');
 const sendEmailRoute = require('./api/send_email');
 const paymentRoute = require('./api/payment');
+const generateRoute = require('./api/generate');
+
 const app = express();
 
 // Middleware for CORS (allowing all origins for now, adjust in production)
@@ -23,6 +25,8 @@ app.use(express.json());
 // Routes for payment and email functionality
 app.use("/api/payment", paymentRoute); // Ensure payment route is set correctly
 app.use('/api/send_email', sendEmailRoute); // Send email route
+app.use('/api/generate', generateRoute);
+
 
 const PORT = process.env.PORT || 3001;
 const server = app.listen(PORT, () => {
