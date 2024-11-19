@@ -11,7 +11,7 @@ app.use(express.json());
 
 // CORS setup
 const corsOptions = {
-  origin: 'https://pumnrdc-next-pranavrathi07.vercel.app', // Allow only this origin
+  origin: '*', // Allow only this origin
   methods: 'GET,POST', // Allow only these methods
   allowedHeaders: 'Content-Type', // Allow these headers
 };
