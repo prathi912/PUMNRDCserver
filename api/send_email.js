@@ -33,6 +33,11 @@ router.post('/', upload.single('idProof'), async (req, res) => {
       return res.status(500).json({ message: 'Email credentials are not configured' });
     }
 
+    // Check if formData exists and is provided
+    if (!req.body.formData) {
+      return res.status(400).json({ message: 'Form data is missing' });
+    }
+
     // Validate and parse formData
     let parsedFormData;
     try {
@@ -55,6 +60,7 @@ router.post('/', upload.single('idProof'), async (req, res) => {
       additionalInformation,
     } = parsedFormData;
 
+    // Check for required fields
     if (!firstName || !email || !equipment) {
       return res.status(400).json({ message: 'Required fields are missing' });
     }
