@@ -24,7 +24,7 @@ router.post("/generate", async (req, res) => {
       firstname: "User", // Replace with the customer's name if available
       email,
       phone,
-      productinfo: "Payment for R&D Services",
+      productinfo: "Payment for Micro Nano R&D Services",
       surl: "https://yourdomain.com/payment-success", // Success URL
       furl: "https://yourdomain.com/payment-failure", // Failure URL
       salt: EASEBUZZ_SALT_KEY, // This is needed to calculate the hash
