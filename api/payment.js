@@ -1,31 +1,45 @@
 const express = require('express');
 const crypto = require('crypto');
+const admin = require('firebase-admin');
 
 const router = express.Router();
 
-// Dummy in-memory data store (can be replaced with a database)
-let paymentDataStore = {};
+// Initialize Firebase Admin
+const serviceAccount = require('../pumnrdc-dc166-dc2117f85546.json'); // Replace with the path to your service account JSON file
 
-// Generate a unique payment link
-router.post('/generate', (req, res) => {
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const db = admin.firestore();
+
+router.post('/generate', async (req, res) => {
   const { amount, email, phone } = req.body;
 
-  // Validate the input
   if (!amount || !email || !phone) {
     return res.status(400).json({ error: 'Amount, email, and phone are required.' });
   }
 
-  // Generate a unique key using crypto
   const uniqueKey = crypto.randomBytes(16).toString('hex');
 
-  // Save payment details in the store (this would be a DB in a real app)
-  paymentDataStore[uniqueKey] = { amount, email, phone };
+  try {
+    // Save payment details in Firestore
+    await db.collection('payments').doc(uniqueKey).set({
+      amount,
+      email,
+      phone,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
 
-  // Create the payment URL (replace with the appropriate front-end URL for your app)
-  const paymentUrl = `https://micronanornd.paruluniversity.ac.in/payment/${uniqueKey}`;
+    // Create the payment URL (replace with the appropriate front-end URL for your app)
+    const paymentUrl = `https://micronanornd.paruluniversity.ac.in/payment/${uniqueKey}`;
 
-  // Respond with the generated link
-  res.json({ link: paymentUrl });
+    // Respond with the generated link
+    res.json({ link: paymentUrl });
+  } catch (error) {
+    console.error('Error saving to Firestore:', error);
+    res.status(500).json({ error: 'Failed to generate payment link.' });
+  }
 });
 
 module.exports = router;

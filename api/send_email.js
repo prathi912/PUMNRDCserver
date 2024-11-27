@@ -5,11 +5,10 @@ const bodyParser = require('body-parser');
 const winston = require('winston');
 const router = express.Router();
 
-// Body parser middleware for parsing JSON and URL-encoded bodies
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 
-// Multer setup for memory storage
+
 const upload = multer({
   storage: multer.memoryStorage(), // Store files in memory as Buffers
   limits: {
@@ -25,7 +24,7 @@ const upload = multer({
   },
 });
 
-// POST route for sending email
+
 router.post('/', upload.single('idProof'), async (req, res) => {
   try {
     if (!req.body.formData) {
@@ -88,7 +87,7 @@ router.post('/', upload.single('idProof'), async (req, res) => {
         ? [
             {
               filename: fileName,
-              content: fileBuffer, // Attach the file from memory buffer
+              content: fileBuffer, 
             },
           ]
         : [],

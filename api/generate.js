@@ -5,7 +5,7 @@ const axios = require("axios");
 // Access environment variables
 const EASEBUZZ_API_KEY = process.env.EASEBUZZ_API_KEY;
 const EASEBUZZ_SALT_KEY = process.env.EASEBUZZ_SALT_KEY;
-const EASEBUZZ_PAYMENT_LINK_API = "https://dashboard.easebuzz.in/easycollect/v1/create";
+const EASEBUZZ_PAYMENT_LINK_API = "https://dashboard.easebuzz.in/easycollect/v1/get";
 
 router.post("/generate", async (req, res) => {
   const { amount, email, phone } = req.body;
@@ -25,8 +25,8 @@ router.post("/generate", async (req, res) => {
       email,
       phone,
       productinfo: "Payment for Micro Nano R&D Services",
-      surl: "https://yourdomain.com/payment-success", // Success URL
-      furl: "https://yourdomain.com/payment-failure", // Failure URL
+      surl: "https://micronanornd.paruluniversity.ac.in/payment/success", // Success URL
+      furl: "https://micronanornd.paruluniversity.ac.in/payment/failure", // Failure URL
       salt: EASEBUZZ_SALT_KEY, // This is needed to calculate the hash
     };
 
