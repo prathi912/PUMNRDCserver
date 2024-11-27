@@ -5,7 +5,7 @@ const axios = require("axios");
 // Access environment variables
 const EASEBUZZ_API_KEY = process.env.EASEBUZZ_API_KEY;
 const EASEBUZZ_SALT_KEY = process.env.EASEBUZZ_SALT_KEY;
-const EASEBUZZ_PAYMENT_LINK_API = "https://www.easebuzz.in/api/v1/transaction/initiate";
+const EASEBUZZ_PAYMENT_LINK_API = "https://dashboard.easebuzz.in/easycollect/v1/create";
 
 router.post("/generate", async (req, res) => {
   const { amount, email, phone } = req.body;
