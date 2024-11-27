@@ -29,7 +29,9 @@ router.post('/generate', async (req, res) => {
   const uniqueKey = crypto.randomBytes(16).toString('hex');
 
   try {
-    // Save payment details in Firestore
+    console.log('Saving payment data to Firestore:', { uniqueKey, amount, email, phone });
+
+    // Save payment details in Firestore with retry logic
     await db.collection('payments').doc(uniqueKey).set({
       amount,
       email,
