@@ -22,7 +22,7 @@ router.post('/generate', (req, res) => {
   paymentDataStore[uniqueKey] = { amount, email, phone };
 
   // Create the payment URL (replace with the appropriate front-end URL for your app)
-  const paymentUrl = `https://pumnrdc-next-pranavrathi07.vercel.app/payment/${uniqueKey}`;
+  const paymentUrl = `https://micronanornd.paruluniversity.ac.in/payment/${uniqueKey}`;
 
   // Respond with the generated link
   res.json({ link: paymentUrl });
