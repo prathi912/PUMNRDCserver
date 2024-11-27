@@ -1,11 +1,13 @@
 const express = require('express');
 const crypto = require('crypto');
 const admin = require('firebase-admin');
+const fs = require('fs');
 
 const router = express.Router();
 
-// Parse the service account JSON from environment variables
-const serviceAccount = JSON.parse(process.env.SECRET);
+// Read and parse the secret file from Render's mounted secrets directory
+const serviceAccountPath = '/etc/secrets/SECRET'; // Update the file name if necessary
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
 
 // Initialize Firebase Admin
 admin.initializeApp({
@@ -14,13 +16,16 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
+// API Endpoint to generate a payment link
 router.post('/generate', async (req, res) => {
   const { amount, email, phone } = req.body;
 
+  // Validate input
   if (!amount || !email || !phone) {
     return res.status(400).json({ error: 'Amount, email, and phone are required.' });
   }
 
+  // Generate a unique key for the payment
   const uniqueKey = crypto.randomBytes(16).toString('hex');
 
   try {
@@ -32,7 +37,7 @@ router.post('/generate', async (req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Create the payment URL (replace with the appropriate front-end URL for your app)
+    // Create the payment URL (replace with your front-end URL)
     const paymentUrl = `https://micronanornd.paruluniversity.ac.in/payment/${uniqueKey}`;
 
     // Respond with the generated link
