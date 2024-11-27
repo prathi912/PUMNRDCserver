@@ -9,6 +9,8 @@ const router = express.Router();
 const serviceAccountPath = '/etc/secrets/SECRET'; // Update the file name if necessary
 const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
 
+console.log('Firestore Project ID:', serviceAccount.project_id);
+
 // Initialize Firebase Admin
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
