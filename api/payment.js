@@ -4,9 +4,10 @@ const admin = require('firebase-admin');
 
 const router = express.Router();
 
-// Initialize Firebase Admin
-const serviceAccount = require('../pumnrdc-dc166-dc2117f85546.json'); // Replace with the path to your service account JSON file
+// Parse the service account JSON from environment variables
+const serviceAccount = JSON.parse(process.env.SECRET);
 
+// Initialize Firebase Admin
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
