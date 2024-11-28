@@ -31,7 +31,7 @@ router.post("/generate", async (req, res) => {
     };
 
     // Calculate the hash for request
-    const hashString = `${EASEBUZZ_API_KEY}|${txnId}|${amount}|Payment for Micro Nano R&D Services|User|${email}|||||||||||${EASEBUZZ_SALT_KEY}`;
+    const hashString = `${EASEBUZZ_API_KEY}|${txnId}|${amount}||${firstName}|Payment for Micro Nano R&D Services|User|${email}|||||||||||${EASEBUZZ_SALT_KEY}`;
     const crypto = require("crypto");
     const hash = crypto.createHash("sha512").update(hashString).digest("hex");
 
