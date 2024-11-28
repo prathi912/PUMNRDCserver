@@ -8,10 +8,10 @@ const EASEBUZZ_SALT_KEY = process.env.EASEBUZZ_SALT_KEY;
 const EASEBUZZ_PAYMENT_LINK_API = "https://www.easebuzz.in/api/v1/transaction/generate-link";
 
 router.post("/generate", async (req, res) => {
-  const { amount, email, phone } = req.body;
+  const { amount, email, phone, firstName } = req.body;
 
-  if (!amount || !email || !phone) {
-    return res.status(400).json({ error: "Amount, email, and phone are required." });
+  if (!amount || !firstName || !email || !phone) {
+    return res.status(400).json({ error: "Amount, email, first Name and phone are required." });
   }
 
   try {
@@ -21,7 +21,7 @@ router.post("/generate", async (req, res) => {
       key: EASEBUZZ_API_KEY,
       txnid: txnId,
       amount,
-      firstname: "User", // Replace with the customer's name if available
+      firstName, 
       email,
       phone,
       productinfo: "Payment for Micro Nano R&D Services",
