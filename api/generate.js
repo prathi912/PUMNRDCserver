@@ -40,7 +40,7 @@ router.post("/generate", async (req, res) => {
     // Prepare hash string using data from Firestore
     const txnId = paymentData.txnid;
     const amount = paymentData.amount;
-    const productinfo = paymentData.productinfo || "Payment for PU Micro Nano R&D Services";
+    const productinfo = paymentData.productinfo || "Payment for Micro Nano R&D Services";
     const firstName = paymentData.firstName;
     const email = paymentData.email;
     const phone = paymentData.phone;
@@ -61,17 +61,29 @@ router.post("/generate", async (req, res) => {
       surl: "https://micronanornd.paruluniversity.ac.in/payment/success", // Success URL
       furl: "https://micronanornd.paruluniversity.ac.in/payment/failure", // Failure URL
       hash,
+      // Optional Fields
+      udf1: paymentData.udf1 || "",
+      udf2: paymentData.udf2 || "",
+      udf3: paymentData.udf3 || "",
+      address1: paymentData.address1 || "",
+      city: paymentData.city || "",
+      state: paymentData.state || "",
+      country: paymentData.country || "",
+      zipcode: paymentData.zipcode || "",
     };
 
     // Make the API request to Easebuzz
-    const response = await axios.post(EASEBUZZ_PAYMENT_LINK_API, postData, {
-      headers: { "Content-Type": "application/json" },
+    const response = await axios.post(EASEBUZZ_PAYMENT_LINK_API, new URLSearchParams(postData).toString(), {
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
     });
 
     // Check if the response contains the payment link
-    const { payment_link } = response.data;
-    if (payment_link) {
-      res.json({ txnId, paymentLink: payment_link });
+    const { status, data } = response.data;
+    if (status === 1 && data) {
+      res.json({ txnId, paymentLink: data });
     } else {
       res.status(500).json({ error: "Failed to generate payment link." });
     }
