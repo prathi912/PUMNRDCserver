@@ -17,7 +17,7 @@ const db = admin.firestore();
 // Access environment variables
 const EASEBUZZ_API_KEY = process.env.EASEBUZZ_API_KEY;
 const EASEBUZZ_SALT_KEY = process.env.EASEBUZZ_SALT_KEY;
-const EASEBUZZ_PAYMENT_LINK_API = "https://testpay.easebuzz.in/payment/initiateLink";
+const EASEBUZZ_PAYMENT_LINK_API = "https://pay.easebuzz.in/payment/initiateLink";
 
 // API endpoint to generate the payment link
 router.post("/generate", async (req, res) => {
