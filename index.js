@@ -23,7 +23,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // Routes for payment and email functionality
-app.use("/api/payment", paymentRoute); // Ensure payment route is set correctly
+app.use('/api/payment', paymentRoute); // Ensure payment route is set correctly
 app.use('/api/send_email', sendEmailRoute); // Send email route
 app.use('/api/generate', generateRoute);
 

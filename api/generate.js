@@ -1,51 +1,54 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
+const crypto = require("crypto");
 
 // Access environment variables
 const EASEBUZZ_API_KEY = process.env.EASEBUZZ_API_KEY;
 const EASEBUZZ_SALT_KEY = process.env.EASEBUZZ_SALT_KEY;
-const EASEBUZZ_PAYMENT_LINK_API = "https://www.easebuzz.in/api/v1/transaction/generate-link";
+const EASEBUZZ_PAYMENT_LINK_API = "https://testpay.easebuzz.in/payment/initiateLink";
 
 router.post("/generate", async (req, res) => {
   const { amount, email, phone, firstName } = req.body;
 
   if (!amount || !firstName || !email || !phone) {
-    return res.status(400).json({ error: "Amount, email, first Name and phone are required." });
+    return res.status(400).json({ error: "Amount, email, first name, and phone are required." });
   }
 
   try {
-    // Prepare data for Easebuzz API
+    // Generate unique transaction ID
     const txnId = `TXN-${Date.now()}`;
+
+    // Prepare the hash string
+    const productinfo = "Payment for Micro Nano R&D Services";
+    const hashString = `${EASEBUZZ_API_KEY}|${txnId}|${amount}|${productinfo}|${firstName}|${email}|||||||||||${EASEBUZZ_SALT_KEY}`;
+
+    // Calculate the hash
+    const hash = crypto.createHash("sha512").update(hashString).digest("hex");
+
+    // Prepare data for Easebuzz API
     const postData = {
       key: EASEBUZZ_API_KEY,
       txnid: txnId,
       amount,
-      firstName, 
+      productinfo,
+      firstname: firstName,
       email,
       phone,
-      productinfo: "Payment for Micro Nano R&D Services",
-      surl: "https://micronanornd.paruluniversity.ac.in/payment/success", // Success URL
-      furl: "https://micronanornd.paruluniversity.ac.in/payment/failure", // Failure URL
-      salt: EASEBUZZ_SALT_KEY, // This is needed to calculate the hash
+      surl: "https://micronanornd.paruluniversity.ac.in/payment/success",
+      furl: "https://micronanornd.paruluniversity.ac.in/payment/failure",
+      hash,
     };
 
-    // Calculate the hash for request
-    const hashString = `${EASEBUZZ_API_KEY}|${txnId}|${amount}||${firstName}|Payment for Micro Nano R&D Services|User|${email}|||||||||||${EASEBUZZ_SALT_KEY}`;
-    const crypto = require("crypto");
-    const hash = crypto.createHash("sha512").update(hashString).digest("hex");
-
-    postData.hash = hash;
-
-    // Send API request to Easebuzz
+    // Make the API request
     const response = await axios.post(EASEBUZZ_PAYMENT_LINK_API, postData, {
       headers: { "Content-Type": "application/json" },
     });
 
-    // Return the transaction ID and payment link
+    // Check if the response contains the payment link
     const { payment_link } = response.data;
     if (payment_link) {
-      res.json({ txnId, easebuzzAccessKey: EASEBUZZ_API_KEY, paymentLink: payment_link });
+      res.json({ txnId, paymentLink: payment_link });
     } else {
       res.status(500).json({ error: "Failed to generate payment link." });
     }
