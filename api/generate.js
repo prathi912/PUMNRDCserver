@@ -2,31 +2,54 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const crypto = require("crypto");
+const admin = require("firebase-admin");
+const fs = require("fs");
+
+// Initialize Firebase Admin
+const serviceAccountPath = '/etc/secrets/SECRET'; // Update the path if necessary
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const db = admin.firestore();
 
 // Access environment variables
 const EASEBUZZ_API_KEY = process.env.EASEBUZZ_API_KEY;
 const EASEBUZZ_SALT_KEY = process.env.EASEBUZZ_SALT_KEY;
 const EASEBUZZ_PAYMENT_LINK_API = "https://testpay.easebuzz.in/payment/initiateLink";
 
+// API endpoint to generate the payment link
 router.post("/generate", async (req, res) => {
-  const { amount, email, phone, firstName } = req.body;
+  const { uniqueKey } = req.body; // Assume uniqueKey is passed in the request body to identify the payment
 
-  if (!amount || !firstName || !email || !phone) {
-    return res.status(400).json({ error: "Amount, email, first name, and phone are required." });
+  if (!uniqueKey) {
+    return res.status(400).json({ error: "UniqueKey is required." });
   }
 
   try {
-    // Generate unique transaction ID
-    const txnId = `TXN-${Date.now()}`;
+    // Fetch payment details from Firestore using uniqueKey
+    const paymentDoc = await db.collection('payments').doc(uniqueKey).get();
+    
+    if (!paymentDoc.exists) {
+      return res.status(404).json({ error: "Payment details not found." });
+    }
 
-    // Prepare the hash string
-    const productinfo = "Payment for Micro Nano R&D Services";
+    const paymentData = paymentDoc.data();
+
+    // Prepare hash string using data from Firestore
+    const txnId = paymentData.txnid;
+    const amount = paymentData.amount;
+    const productinfo = paymentData.productinfo || "Payment for PU Micro Nano R&D Services";
+    const firstName = paymentData.firstName;
+    const email = paymentData.email;
+    const phone = paymentData.phone;
+
+    // Generate the hash
     const hashString = `${EASEBUZZ_API_KEY}|${txnId}|${amount}|${productinfo}|${firstName}|${email}|||||||||||${EASEBUZZ_SALT_KEY}`;
-
-    // Calculate the hash
     const hash = crypto.createHash("sha512").update(hashString).digest("hex");
 
-    // Prepare data for Easebuzz API
+    // Prepare the postData for Easebuzz API
     const postData = {
       key: EASEBUZZ_API_KEY,
       txnid: txnId,
@@ -35,12 +58,12 @@ router.post("/generate", async (req, res) => {
       firstname: firstName,
       email,
       phone,
-      surl: "https://micronanornd.paruluniversity.ac.in/payment/success",
-      furl: "https://micronanornd.paruluniversity.ac.in/payment/failure",
+      surl: "https://micronanornd.paruluniversity.ac.in/payment/success", // Success URL
+      furl: "https://micronanornd.paruluniversity.ac.in/payment/failure", // Failure URL
       hash,
     };
 
-    // Make the API request
+    // Make the API request to Easebuzz
     const response = await axios.post(EASEBUZZ_PAYMENT_LINK_API, postData, {
       headers: { "Content-Type": "application/json" },
     });
