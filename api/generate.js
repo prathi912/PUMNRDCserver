@@ -5,12 +5,18 @@ const crypto = require("crypto");
 const admin = require("firebase-admin");
 const fs = require("fs");
 
-// Initialize Firebase Admin
-const serviceAccountPath = '/etc/secrets/SECRET'; // Update the path if necessary
-const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// Initialize Firebase Admin only if not initialized already
+if (!admin.apps.length) {
+  const serviceAccountPath = '/etc/secrets/SECRET'; // Update the path if necessary
+  const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+  
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+} else {
+  // If Firebase app is already initialized, don't initialize again
+  console.log("Firebase app already initialized.");
+}
 
 const db = admin.firestore();
 
