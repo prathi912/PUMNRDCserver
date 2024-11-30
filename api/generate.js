@@ -8,7 +8,7 @@ const fs = require("fs");
 // Initialize Firebase Admin only if not initialized already
 if (!admin.apps.length) {
   try {
-    const serviceAccountPath = "../SECRET.json"; // Adjust the path if necessary
+    const serviceAccountPath = "etc/secrets/SECRET"; // Adjust the path if necessary
     const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
 
     admin.initializeApp({
