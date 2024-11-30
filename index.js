@@ -11,6 +11,7 @@ const allowedOrigins = [
   'https://micronanornd.paruluniversity.ac.in/contact',
   'https://micronanornd.paruluniversity.ac.in/payment',
   'https://server-1-22hx.onrender.com',
+  'localhost:3000',
   // Add the specific origins you want to allow
 ];
 // Middleware for CORS

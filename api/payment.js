@@ -5,7 +5,7 @@ const fs = require('fs');
 
 const router = express.Router();
 
-const serviceAccountPath = '/etc/secrets/SECRET'; // Update the file name if necessary
+const serviceAccountPath = "etc/secreats/SECRET"; // Update the file name if necessary
 const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
 
 console.log('Firestore Project ID:', serviceAccount.project_id);
