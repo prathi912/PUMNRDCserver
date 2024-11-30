@@ -18,7 +18,7 @@ admin.initializeApp({
 const db = admin.firestore();
 
 // API Endpoint to generate a payment link
-router.post('./api/payment/generate', async (req, res) => {
+router.post('/generate', async (req, res) => {
   const { amount, firstName, email, phone } = req.body;
 
   // Validate input
