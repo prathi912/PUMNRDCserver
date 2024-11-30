@@ -26,7 +26,7 @@ const EASEBUZZ_SALT_KEY = process.env.EASEBUZZ_SALT_KEY;
 const EASEBUZZ_PAYMENT_LINK_API = "https://pay.easebuzz.in/payment/initiateLink";
 
 // API endpoint to generate the payment link
-router.post("/api/generate", async (req, res) => {
+router.post("/generate", async (req, res) => {
   const { uniqueKey } = req.body; // Assume uniqueKey is passed in the request body to identify the payment
 
   if (!uniqueKey) {
