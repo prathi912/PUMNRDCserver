@@ -41,7 +41,7 @@ app.use(express.json());
 // Routes for payment and email functionality
 app.use('/api/payment', paymentRoute);
 app.use('/api/send_email', sendEmailRoute);
-app.use('./api/generate', generateRoute);
+app.use('/api/generate', generateRoute);
 
 const PORT = process.env.PORT || 3001;
 const server = app.listen(PORT, () => {
