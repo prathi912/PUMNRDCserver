@@ -12,24 +12,23 @@ const allowedOrigins = [
   'https://micronanornd.paruluniversity.ac.in/payment',
   // Add the specific origins you want to allow
 ];
-
-// Middleware for CORS (only allowing whitelisted origins)
+// Middleware for CORS
 app.use((req, res, next) => {
   const origin = req.headers.origin;
 
-  // Check if the request's origin is in the whitelist
+  // Allow specific origins
   if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin); // Allow the origin
+    res.header('Access-Control-Allow-Origin', origin);
   } else {
-    res.header('Access-Control-Allow-Origin', ''); // Reject if origin is not in the whitelist
+    res.header('Access-Control-Allow-Origin', '*'); // Allow all for testing
   }
 
-  res.header('Access-Control-Allow-Methods', 'GET, POST'); // Allow only GET and POST methods
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Allow these headers
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); // Include OPTIONS
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  // Allow preflight requests (OPTIONS)
+  // Handle preflight request
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return res.status(204).end(); // Respond with no content
   }
 
   next();
