@@ -7,7 +7,7 @@ const app = express();
 
 // Middleware for CORS (allowing all origins for now, adjust in production)
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*'); // Allow all origins (use a specific origin in production)
+  res.header('Access-Control-Allow-Origin', 'micronanornd.paruluniversity.ac.in'); // Allow all origins (use a specific origin in production)
   res.header('Access-Control-Allow-Methods', 'GET, POST'); // Allow only GET and POST methods
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Allow these headers
 
