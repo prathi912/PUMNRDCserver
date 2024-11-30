@@ -8,7 +8,9 @@ const app = express();
 // List of whitelisted domains
 const allowedOrigins = [
   'https://micronanornd.paruluniversity.ac.in', 
-  'https://micronanornd.paruluniversity.ac.in/contact',// Add the specific origins you want to allow
+  'https://micronanornd.paruluniversity.ac.in/contact',
+  'https://micronanornd.paruluniversity.ac.in/payment',
+  // Add the specific origins you want to allow
 ];
 
 // Middleware for CORS (only allowing whitelisted origins)
