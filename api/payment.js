@@ -5,7 +5,6 @@ const fs = require('fs');
 
 const router = express.Router();
 
-// Read and parse the secret file from Render's mounted secrets directory
 const serviceAccountPath = '/etc/secrets/SECRET'; // Update the file name if necessary
 const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
 
@@ -19,7 +18,7 @@ admin.initializeApp({
 const db = admin.firestore();
 
 // API Endpoint to generate a payment link
-router.post('./api/generate', async (req, res) => {
+router.post('./api/payment/generate', async (req, res) => {
   const { amount, firstName, email, phone } = req.body;
 
   // Validate input
