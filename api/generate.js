@@ -26,7 +26,7 @@ const EASEBUZZ_SALT_KEY = process.env.EASEBUZZ_SALT_KEY;
 const EASEBUZZ_PAYMENT_LINK_API = "https://pay.easebuzz.in/payment/initiateLink";
 
 // API endpoint to generate the payment link
-router.post(".api/generate", async (req, res) => {
+router.post("/api/generate", async (req, res) => {
   const { uniqueKey } = req.body; // Assume uniqueKey is passed in the request body to identify the payment
 
   if (!uniqueKey) {
@@ -71,11 +71,11 @@ router.post(".api/generate", async (req, res) => {
       udf1: paymentData.udf1 || "",
       udf2: paymentData.udf2 || "",
       udf3: paymentData.udf3 || "",
-      address1: paymentData.address1 || "",
-      city: paymentData.city || "",
-      state: paymentData.state || "",
-      country: paymentData.country || "",
-      zipcode: paymentData.zipcode || "",
+      address1: paymentData.address1 || "Parul University",
+      city: paymentData.city || "Vadodara",
+      state: paymentData.state || "Gujarat",
+      country: paymentData.country || "India",
+      zipcode: paymentData.zipcode || "391760",
     };
 
     // Make the API request to Easebuzz

@@ -40,7 +40,7 @@ router.post('./api/generate', async (req, res) => {
       firstName,
       email,
       phone,
-      productinfo: "PU MICRO-NANO R&D RESEARCH CENTRE SERVICE",
+      productinfo: "PU MICRO-NANO R&D RESEARCH CENTER SERVICE",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -52,7 +52,7 @@ router.post('./api/generate', async (req, res) => {
       firstname: firstName,
       email,
       phone,
-      productinfo: "PU Micro-Nano Research & Development Centre Service",
+      productinfo: "PU MICRO-NANO R&D RESEARCH CENTER SERVICE",
       surl: "https://micronanornd.paruluniversity.ac.in/payment/success",
       furl: "https://micronanornd.paruluniversity.ac.in/payment/failure",
     };

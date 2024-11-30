@@ -71,6 +71,7 @@ router.post('/', upload.single('idProof'), async (req, res) => {
       from: process.env.GMAIL_USER,
       to: 'micronanornd@paruluniversity.ac.in', // Replace with recipient email
       subject: `New Contact Request from ${firstName} ${lastName}`,
+      cc:'',
       text: `
         Name: ${firstName} ${lastName}
         Email: ${email}
