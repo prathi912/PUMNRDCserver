@@ -84,7 +84,7 @@ router.post('/', upload.single('idProof'), async (req, res) => {
         Best Time to Contact: ${bestTimeToContact}
         Preferred Method of Contact: ${preferredMethodOfContact}
         Additional Information: ${additionalInformation}
-
+        Material Conductivity: ${materialConductivity || 'Not Specified'}
       `,
       attachments: fileBuffer
         ? [
