@@ -46,6 +46,7 @@ router.post('/', upload.single('idProof'), async (req, res) => {
       bestTimeToContact,
       preferredMethodOfContact,
       additionalInformation,
+      materialConductivity,
     } = parsedFormData;
 
     let fileBuffer = null;
@@ -83,6 +84,7 @@ router.post('/', upload.single('idProof'), async (req, res) => {
         Best Time to Contact: ${bestTimeToContact}
         Preferred Method of Contact: ${preferredMethodOfContact}
         Additional Information: ${additionalInformation}
+
       `,
       attachments: fileBuffer
         ? [
