@@ -43,6 +43,7 @@ router.post('/', upload.single('idProof'), async (req, res) => {
       equipment,
       selectedServices,
       additionalServices,
+      NumberofSample,
       bestTimeToContact,
       preferredMethodOfContact,
       additionalInformation,
@@ -81,6 +82,7 @@ router.post('/', upload.single('idProof'), async (req, res) => {
         Equipment: ${equipment}
         Selected Services: ${selectedServices.join(', ')}
         Additional Services: ${additionalServices.join(', ')}
+        NumberofSample: ${NumberofSample}
         Best Time to Contact: ${bestTimeToContact}
         Preferred Method of Contact: ${preferredMethodOfContact}
         Additional Information: ${additionalInformation}
