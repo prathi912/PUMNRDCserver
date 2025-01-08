@@ -39,10 +39,25 @@ router.post('/', upload.single('idProof'), async (req, res) => {
       lastName,
       email,
       phoneNumber,
+      association,
+      equipment,
+      selectedServices,
+      additionalServices,
+      NumberofSample,
       bestTimeToContact,
       preferredMethodOfContact,
       additionalInformation,
+      materialConductivity,
     } = parsedFormData;
+
+    let fileBuffer = null;
+    let fileName = null;
+
+    // Process the uploaded file if it exists
+    if (req.file) {
+      fileBuffer = req.file.buffer; // File content as Buffer
+      fileName = req.file.originalname; // Original file name
+    }
 
     // Nodemailer setup
     const transporter = nodemailer.createTransport({
@@ -56,17 +71,31 @@ router.post('/', upload.single('idProof'), async (req, res) => {
     // Prepare the email content
     const mailOptions = {
       from: process.env.GMAIL_USER,
-      to: 'pranav.rathi37922@paruluniversity.ac.in', // Replace with recipient email
+      to: 'micronanornd@paruluniversity.ac.in', // Replace with recipient email
       subject: `New Contact Request from ${firstName} ${lastName}`,
       cc:'',
       text: `
         Name: ${firstName} ${lastName}
         Email: ${email}
         Phone Number: ${phoneNumber}
+        Association: ${association}
+        Equipment: ${equipment}
+        Selected Services: ${selectedServices.join(', ')}
+        Additional Services: ${additionalServices.join(', ')}
+        NumberofSample: ${NumberofSample}
         Best Time to Contact: ${bestTimeToContact}
         Preferred Method of Contact: ${preferredMethodOfContact}
         Additional Information: ${additionalInformation}
+        Material Conductivity: ${materialConductivity || 'Not Specified'}
       `,
+      attachments: fileBuffer
+        ? [
+            {
+              filename: fileName,
+              content: fileBuffer, 
+            },
+          ]
+        : [],
     };
 
     // Send email
