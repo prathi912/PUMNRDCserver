@@ -1,17 +1,11 @@
 const express = require('express');
 const sendEmailRoute = require('./api/send_email');
-const paymentRoute = require('./api/payment');
-const generateRoute = require('./api/generate');
 
 const app = express();
 
 // List of whitelisted domains
 const allowedOrigins = [
-  'https://micronanornd.paruluniversity.ac.in', 
-  'https://micronanornd.paruluniversity.ac.in/contact',
-  'https://micronanornd.paruluniversity.ac.in/payment',
-  'https://server-1-22hx.onrender.com',
-  'localhost:3000',
+  '*'
   // Add the specific origins you want to allow
 ];
 // Middleware for CORS
@@ -40,9 +34,8 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // Routes for payment and email functionality
-app.use('/api/payment', paymentRoute);
 app.use('/api/send_email', sendEmailRoute);
-app.use('/api/generate', generateRoute);
+
 
 const PORT = process.env.PORT || 3001;
 const server = app.listen(PORT, () => {
