@@ -41,14 +41,17 @@ router.post('/', upload.single('idProof'), async (req, res) => {
       phoneNumber,
       association,
       equipment,
+     
+      materialConductivity,
+      biologicalnature,
+      TypeOfSample,
       selectedServices,
       additionalServices,
       NumberofSample,
       bestTimeToContact,
       preferredMethodOfContact,
       additionalInformation,
-      materialConductivity,
-      biologicalnature,
+     
     } = parsedFormData;
 
     let fileBuffer = null;
@@ -89,6 +92,7 @@ router.post('/', upload.single('idProof'), async (req, res) => {
         Additional Information: ${additionalInformation}
         Material Conductivity: ${materialConductivity || 'Not Specified'}
         biologicalnature: ${biologicalnature}
+        TypeOfSample: ${TypeOfSample}
       `,
       attachments: fileBuffer
         ? [
