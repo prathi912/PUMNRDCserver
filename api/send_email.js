@@ -12,7 +12,7 @@ router.use(bodyParser.urlencoded({ extended: true }));
 const upload = multer({
   storage: multer.memoryStorage(), // Store files in memory as Buffers
   limits: {
-    fileSize: 5 * 1024 * 1024, // Limit file size to 5MB
+    fileSize: 15 * 1024 * 1024, // Limit file size to 5MB
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
