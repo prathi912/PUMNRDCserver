@@ -5,12 +5,18 @@ const sendEmailRoute = require('./api/send_email');
 const app = express();
 
 const allowedOrigins = [
-  'https://micronanornd.paruluniversity.ac.in/', // e.g., Vercel domain
+  'https://micronanornd.paruluniversity.ac.in', // e.g., Vercel domain
   'http://localhost:3000' // for local testing
 ];
 
 app.use(cors({
-  origin: 'https://micronanornd.paruluniversity.ac.in', // Only allow this domain
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
