@@ -3,6 +3,20 @@ const nodemailer = require('nodemailer');
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const winston = require('winston');
+
+// Configure Winston logger
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.simple()
+  ),
+  transports: [
+    new winston.transports.Console()
+  ]
+});
+
 const router = express.Router();
 
 router.use(bodyParser.json());
@@ -108,8 +122,13 @@ router.post('/', upload.single('idProof'), async (req, res) => {
 
     res.status(200).json({ message: 'Email sent successfully' });
   } catch (error) {
-    // Log error and respond
-    winston.error('Error sending email:', error);
+    // Log detailed error information
+    logger.error('Error sending email:', {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      stack: error.stack
+    });
     res.status(500).json({ message: 'Failed to send email', error: error.message });
   }
 });
