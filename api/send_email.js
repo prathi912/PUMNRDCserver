@@ -76,7 +76,7 @@ router.post("/", upload.single("idProof"), async (req, res) => {
 
     // Nodemailer setup
     const createTransporter = () => {
-      return nodemailer.createTransporter({
+      return nodemailer.createTransport({
         service: "gmail",
         auth: {
           user: process.env.GMAIL_USER,
