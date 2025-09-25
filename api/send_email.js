@@ -88,6 +88,8 @@ const transporter = nodemailer.createTransport({
   tls: {
     ciphers: 'SSLv3'
   },
+  debug: true, // Enable debug output
+  logger: logger // Use Winston logger
 });
 
     // Prepare the email content
