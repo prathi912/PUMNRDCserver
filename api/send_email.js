@@ -90,6 +90,8 @@ router.post("/", upload.single("idProof"), async (req, res) => {
       });
     };
 
+    const transporter = createTransporter();
+
     // Prepare the email content
     const mailOptions = {
       from: process.env.GMAIL_USER,
