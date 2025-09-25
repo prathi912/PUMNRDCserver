@@ -1,20 +1,18 @@
-const express = require('express');
-const nodemailer = require('nodemailer');
-const multer = require('multer');
-const bodyParser = require('body-parser');
-const winston = require('winston');
+const express = require("express");
+const nodemailer = require("nodemailer");
+const multer = require("multer");
+const bodyParser = require("body-parser");
+const winston = require("winston");
 
 // Configure Winston logger
 const logger = winston.createLogger({
-  level: 'info',
+  level: "info",
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
     winston.format.simple()
   ),
-  transports: [
-    new winston.transports.Console()
-  ]
+  transports: [new winston.transports.Console()],
 });
 
 const router = express.Router();
@@ -22,27 +20,27 @@ const router = express.Router();
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 
-
 const upload = multer({
   storage: multer.memoryStorage(), // Store files in memory as Buffers
   limits: {
     fileSize: 15 * 1024 * 1024, // Limit file size to 5MB
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only JPG, PNG, and PDF files are allowed'));
+      cb(new Error("Only JPG, PNG, and PDF files are allowed"));
     }
   },
 });
 
-
-router.post('/', upload.single('idProof'), async (req, res) => {
+router.post("/", upload.single("idProof"), async (req, res) => {
   try {
     if (!req.body.formData) {
-      return res.status(400).json({ message: 'Missing formData in request body' });
+      return res
+        .status(400)
+        .json({ message: "Missing formData in request body" });
     }
 
     const { formData } = req.body;
@@ -77,41 +75,40 @@ router.post('/', upload.single('idProof'), async (req, res) => {
     }
 
     // Nodemailer setup
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // use TLS
-  requireTLS: true, // Require TLS
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
-  tls: {
-    ciphers: 'SSLv3'
-  },
-  debug: true, // Enable debug output
-  logger: logger // Use Winston logger
-});
+    const createTransporter = () => {
+      return nodemailer.createTransporter({
+        service: "gmail",
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_PASS,
+        },
+        connectionTimeout: 60000,
+        greetingTimeout: 30000,
+        socketTimeout: 60000,
+
+        debug: process.env.NODE_ENV === "development",
+      });
+    };
 
     // Prepare the email content
     const mailOptions = {
       from: process.env.GMAIL_USER,
-      to: 'micronanornd@paruluniversity.ac.in', // Replace with recipient email
+      to: "micronanornd@paruluniversity.ac.in", // Replace with recipient email
       subject: `New Contact Request from ${firstName} ${lastName}`,
-      cc:'',
+      cc: "",
       text: `
         Name: ${firstName} ${lastName}
         Email: ${email}
         Phone Number: ${phoneNumber}
         Association: ${association}
         Equipment: ${equipment}
-        Selected Services: ${selectedServices.join(', ')}
-        Additional Services: ${additionalServices.join(', ')}
+        Selected Services: ${selectedServices.join(", ")}
+        Additional Services: ${additionalServices.join(", ")}
         NumberofSample: ${numberOfSamples}
         Best Time to Contact: ${bestTimeToContact}
         Preferred Method of Contact: ${preferredMethodOfContact}
         Additional Information: ${additionalInformation}
-        Material Conductivity: ${materialConductivity || 'Not Specified'}
+        Material Conductivity: ${materialConductivity || "Not Specified"}
         biologicalnature: ${biologicalnature}
         TypeOfSample: ${TypeOfSample}
       `,
@@ -128,16 +125,18 @@ const transporter = nodemailer.createTransport({
     // Send email
     await transporter.sendMail(mailOptions);
 
-    res.status(200).json({ message: 'Email sent successfully' });
+    res.status(200).json({ message: "Email sent successfully" });
   } catch (error) {
     // Log detailed error information
-    logger.error('Error sending email:', {
+    logger.error("Error sending email:", {
       message: error.message,
       code: error.code,
       command: error.command,
-      stack: error.stack
+      stack: error.stack,
     });
-    res.status(500).json({ message: 'Failed to send email', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to send email", error: error.message });
   }
 });
 
