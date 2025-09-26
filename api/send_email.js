@@ -37,7 +37,7 @@ const upload = multer({
 
 // Create transporter outside the route for better performance
 const createTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     service: "gmail", // Use service instead of manual config
     auth: {
       user: process.env.GMAIL_USER,
