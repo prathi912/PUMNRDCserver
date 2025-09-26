@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
   try {
     // Validate environment variables
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
       console.error("Missing email configuration");
       return res.status(500).json({
         message: "Server configuration error: Email credentials not found",
