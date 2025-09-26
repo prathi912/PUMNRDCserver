@@ -15,6 +15,8 @@ export default async function handler(req, res) {
       });
     }
 
+    console.log("Received email request:", req.body);
+
     const { formData, file } = req.body;
 
     let parsedFormData;
