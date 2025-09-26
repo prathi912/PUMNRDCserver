@@ -3,6 +3,9 @@ const nodemailer = require("nodemailer");
 const multer = require("multer");
 const bodyParser = require("body-parser");
 const winston = require("winston");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 // Configure Winston logger
 const logger = winston.createLogger({
@@ -74,6 +77,8 @@ router.post("/", upload.single("idProof"), async (req, res) => {
       fileName = req.file.originalname; // Original file name
     }
 
+    // console.log("GMAIL USER:", process.env.GMAIL_USER);
+    // console.log("GMAIL PASS:", process.env.GMAIL_PASS);
     // Nodemailer setup
     const createTransporter = () => {
       return nodemailer.createTransport({
@@ -91,6 +96,19 @@ router.post("/", upload.single("idProof"), async (req, res) => {
     };
 
     const transporter = createTransporter();
+
+    // const testConnection = async () => {
+    //   try {
+    //     const transporter = createTransporter();
+    //     await transporter.verify();
+    //     logger.info("SMTP connection verified successfully");
+    //   } catch (error) {
+    //     logger.error("SMTP connection failed:", error);
+    //   }
+    // };
+
+    // // Call test connection when module loads
+    // testConnection();
 
     // Prepare the email content
     const mailOptions = {
