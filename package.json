@@ -1,11 +1,9 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "api/send-email.js",
+  "main": "index.js",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'No build step needed for Vercel API routes'",
-    "start": "echo 'This will be handled by Vercel'"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
