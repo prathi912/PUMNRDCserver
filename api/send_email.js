@@ -68,6 +68,8 @@ router.post("/", upload.single("idProof"), async (req, res) => {
       additionalInformation,
     } = parsedFormData;
 
+    console.log("Form Data:", parsedFormData);
+
     let fileBuffer = null;
     let fileName = null;
 
@@ -98,17 +100,16 @@ router.post("/", upload.single("idProof"), async (req, res) => {
     const transporter = createTransporter();
 
     // const testConnection = async () => {
-    //   try {
-    //     const transporter = createTransporter();
-    //     await transporter.verify();
-    //     logger.info("SMTP connection verified successfully");
-    //   } catch (error) {
-    //     logger.error("SMTP connection failed:", error);
-    //   }
-    // };
+    try {
+      const transporter = createTransporter();
+      await transporter.verify();
+      logger.info("SMTP connection verified successfully");
+    } catch (error) {
+      logger.error("SMTP connection failed:", error);
+    }
 
-    // // Call test connection when module loads
-    // testConnection();
+    // Call test connection when module loads
+    testConnection();
 
     // Prepare the email content
     const mailOptions = {
