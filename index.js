@@ -36,4 +36,8 @@
 //   });
 // });
 
-console.log("Server started!");
+export function server() {
+  console.log("Server is running!");
+}
+
+server();
