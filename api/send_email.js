@@ -2,18 +2,6 @@ const express = require("express");
 const nodemailer = require("nodemailer");
 const multer = require("multer");
 const bodyParser = require("body-parser");
-const winston = require("winston");
-
-// Configure Winston logger
-const logger = winston.createLogger({
-  level: "info",
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.simple()
-  ),
-  transports: [new winston.transports.Console()],
-});
 
 const router = express.Router();
 
@@ -37,22 +25,16 @@ const upload = multer({
 
 // Create transporter outside the route for better performance
 const createTransporter = () => {
-  return nodemailer.createTransport({
+  return nodemailer.createTransporter({
     service: "gmail", // Use service instead of manual config
     auth: {
       user: process.env.GMAIL_USER,
       pass: process.env.GMAIL_PASS, // Make sure this is an App Password
     },
-    // Remove problematic TLS settings
-    // tls: {
-    //   ciphers: 'SSLv3' // This is outdated and insecure
-    // },
-
     // Add timeout configurations
     connectionTimeout: 60000, // 60 seconds
     greetingTimeout: 30000, // 30 seconds
     socketTimeout: 60000, // 60 seconds
-
     debug: process.env.NODE_ENV === "development", // Only debug in development
   });
 };
@@ -62,9 +44,9 @@ const testConnection = async () => {
   try {
     const transporter = createTransporter();
     await transporter.verify();
-    logger.info("SMTP connection verified successfully");
+    console.log("SMTP connection verified successfully");
   } catch (error) {
-    logger.error("SMTP connection failed:", error);
+    console.error("SMTP connection failed:", error);
   }
 };
 
@@ -75,7 +57,7 @@ router.post("/", upload.single("idProof"), async (req, res) => {
   try {
     // Validate environment variables
     if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-      logger.error("Missing email configuration");
+      console.error("Missing email configuration");
       return res.status(500).json({
         message: "Server configuration error: Email credentials not found",
       });
@@ -93,7 +75,7 @@ router.post("/", upload.single("idProof"), async (req, res) => {
     try {
       parsedFormData = JSON.parse(formData);
     } catch (parseError) {
-      logger.error("JSON parse error:", parseError);
+      console.error("JSON parse error:", parseError);
       return res.status(400).json({ message: "Invalid JSON in formData" });
     }
 
@@ -122,7 +104,7 @@ router.post("/", upload.single("idProof"), async (req, res) => {
     if (req.file) {
       fileBuffer = req.file.buffer;
       fileName = req.file.originalname;
-      logger.info(`File uploaded: ${fileName}, Size: ${req.file.size} bytes`);
+      console.log(`File uploaded: ${fileName}, Size: ${req.file.size} bytes`);
     }
 
     // Create transporter
@@ -131,9 +113,9 @@ router.post("/", upload.single("idProof"), async (req, res) => {
     // Test connection before sending
     try {
       await transporter.verify();
-      logger.info("Transporter verified before sending email");
+      console.log("Transporter verified before sending email");
     } catch (verifyError) {
-      logger.error("Transporter verification failed:", verifyError);
+      console.error("Transporter verification failed:", verifyError);
       return res.status(500).json({
         message: "Email service unavailable. Please try again later.",
       });
@@ -145,37 +127,62 @@ router.post("/", upload.single("idProof"), async (req, res) => {
       to: "micronanornd@paruluniversity.ac.in",
       subject: `New Contact Request from ${firstName} ${lastName}`,
       html: `
-        <h3>New Contact Request</h3>
-        <p><strong>Name:</strong> ${firstName} ${lastName}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Phone Number:</strong> ${phoneNumber}</p>
-        <p><strong>Association:</strong> ${association}</p>
-        <p><strong>Equipment:</strong> ${equipment}</p>
-        <p><strong>Selected Services:</strong> ${
-          Array.isArray(selectedServices) ? selectedServices.join(", ") : "None"
-        }</p>
-        <p><strong>Additional Services:</strong> ${
-          Array.isArray(additionalServices)
-            ? additionalServices.join(", ")
-            : "None"
-        }</p>
-        <p><strong>Number of Samples:</strong> ${numberOfSamples}</p>
-        <p><strong>Best Time to Contact:</strong> ${bestTimeToContact}</p>
-        <p><strong>Preferred Method of Contact:</strong> ${preferredMethodOfContact}</p>
-        <p><strong>Material Conductivity:</strong> ${
-          materialConductivity || "Not Specified"
-        }</p>
-        <p><strong>Biological Nature:</strong> ${
-          biologicalnature || "Not Specified"
-        }</p>
-        <p><strong>Type of Sample:</strong> ${
-          TypeOfSample || "Not Specified"
-        }</p>
-        ${
-          additionalInformation
-            ? `<p><strong>Additional Information:</strong> ${additionalInformation}</p>`
-            : ""
-        }
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">
+            New Contact Request
+          </h2>
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="color: #007bff; margin-top: 0;">Contact Information</h3>
+            <p><strong>Name:</strong> ${firstName} ${lastName}</p>
+            <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+            <p><strong>Phone:</strong> ${phoneNumber}</p>
+            <p><strong>Association:</strong> ${association}</p>
+          </div>
+          
+          <div style="background: #fff; padding: 20px; border: 1px solid #dee2e6; border-radius: 5px; margin: 20px 0;">
+            <h3 style="color: #007bff; margin-top: 0;">Service Details</h3>
+            <p><strong>Equipment:</strong> ${equipment}</p>
+            <p><strong>Selected Services:</strong> ${
+              Array.isArray(selectedServices)
+                ? selectedServices.join(", ")
+                : "None"
+            }</p>
+            <p><strong>Additional Services:</strong> ${
+              Array.isArray(additionalServices)
+                ? additionalServices.join(", ")
+                : "None"
+            }</p>
+            <p><strong>Number of Samples:</strong> ${numberOfSamples}</p>
+          </div>
+          
+          <div style="background: #fff; padding: 20px; border: 1px solid #dee2e6; border-radius: 5px; margin: 20px 0;">
+            <h3 style="color: #007bff; margin-top: 0;">Sample Information</h3>
+            <p><strong>Material Conductivity:</strong> ${
+              materialConductivity || "Not Specified"
+            }</p>
+            <p><strong>Biological Nature:</strong> ${
+              biologicalnature || "Not Specified"
+            }</p>
+            <p><strong>Type of Sample:</strong> ${
+              TypeOfSample || "Not Specified"
+            }</p>
+          </div>
+          
+          <div style="background: #fff; padding: 20px; border: 1px solid #dee2e6; border-radius: 5px; margin: 20px 0;">
+            <h3 style="color: #007bff; margin-top: 0;">Contact Preferences</h3>
+            <p><strong>Best Time to Contact:</strong> ${bestTimeToContact}</p>
+            <p><strong>Preferred Method:</strong> ${preferredMethodOfContact}</p>
+            ${
+              additionalInformation
+                ? `<p><strong>Additional Information:</strong> ${additionalInformation}</p>`
+                : ""
+            }
+          </div>
+          
+          <div style="margin-top: 30px; padding: 15px; background: #e9ecef; border-radius: 5px; font-size: 12px; color: #6c757d;">
+            <p>This email was sent from the contact form on ${new Date().toLocaleString()}</p>
+          </div>
+        </div>
       `,
       attachments: fileBuffer
         ? [
@@ -188,7 +195,7 @@ router.post("/", upload.single("idProof"), async (req, res) => {
     };
 
     // Send email with timeout handling
-    logger.info("Attempting to send email...");
+    console.log("Attempting to send email...");
 
     const emailPromise = transporter.sendMail(mailOptions);
     const timeoutPromise = new Promise((_, reject) => {
@@ -197,11 +204,11 @@ router.post("/", upload.single("idProof"), async (req, res) => {
 
     await Promise.race([emailPromise, timeoutPromise]);
 
-    logger.info("Email sent successfully");
+    console.log("Email sent successfully");
     res.status(200).json({ message: "Email sent successfully" });
   } catch (error) {
     // Enhanced error logging
-    logger.error("Error sending email:", {
+    console.error("Error sending email:", {
       message: error.message,
       code: error.code,
       command: error.command,
