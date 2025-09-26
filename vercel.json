@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "api/send-email.js": {
+    "api/send_email.js": {
       "maxDuration": 30
     }
   },
