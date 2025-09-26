@@ -49,7 +49,7 @@ export default async function handler(req, res) {
       service: "gmail",
       auth: {
         user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD, // Use App Password, not regular password
+        pass: process.env.GMAIL_PASS, // Use App Password, not regular password
       },
       // Optimized for serverless
       pool: false, // Disable connection pooling
