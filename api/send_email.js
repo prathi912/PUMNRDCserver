@@ -1,79 +1,26 @@
-const express = require("express");
+// api/send-email.js (Vercel API route with Nodemailer fix)
 const nodemailer = require("nodemailer");
-const multer = require("multer");
-const bodyParser = require("body-parser");
 
-const router = express.Router();
-
-router.use(bodyParser.json());
-router.use(bodyParser.urlencoded({ extended: true }));
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 15 * 1024 * 1024, // 15MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only JPG, PNG, and PDF files are allowed"));
-    }
-  },
-});
-
-// Create transporter outside the route for better performance
-const createTransporter = () => {
-  return nodemailer.createTransporter({
-    service: "gmail", // Use service instead of manual config
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_PASS, // Make sure this is an App Password
-    },
-    // Add timeout configurations
-    connectionTimeout: 60000, // 60 seconds
-    greetingTimeout: 30000, // 30 seconds
-    socketTimeout: 60000, // 60 seconds
-    debug: process.env.NODE_ENV === "development", // Only debug in development
-  });
-};
-
-// Test transporter connection on startup
-const testConnection = async () => {
-  try {
-    const transporter = createTransporter();
-    await transporter.verify();
-    console.log("SMTP connection verified successfully");
-  } catch (error) {
-    console.error("SMTP connection failed:", error);
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method not allowed" });
   }
-};
 
-// Call test connection when module loads
-testConnection();
-
-router.post("/", upload.single("idProof"), async (req, res) => {
   try {
     // Validate environment variables
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
       console.error("Missing email configuration");
       return res.status(500).json({
         message: "Server configuration error: Email credentials not found",
       });
     }
 
-    if (!req.body.formData) {
-      return res
-        .status(400)
-        .json({ message: "Missing formData in request body" });
-    }
+    const { formData, file } = req.body;
 
-    const { formData } = req.body;
     let parsedFormData;
-
     try {
-      parsedFormData = JSON.parse(formData);
+      parsedFormData =
+        typeof formData === "string" ? JSON.parse(formData) : formData;
     } catch (parseError) {
       console.error("JSON parse error:", parseError);
       return res.status(400).json({ message: "Invalid JSON in formData" });
@@ -89,39 +36,45 @@ router.post("/", upload.single("idProof"), async (req, res) => {
       materialConductivity,
       biologicalnature,
       TypeOfSample,
-      selectedServices = [], // Default to empty array
-      additionalServices = [], // Default to empty array
+      selectedServices = [],
+      additionalServices = [],
       numberOfSamples,
       bestTimeToContact,
       preferredMethodOfContact,
       additionalInformation,
     } = parsedFormData;
 
-    let fileBuffer = null;
-    let fileName = null;
+    // Create transporter with optimized settings for serverless
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD, // Use App Password, not regular password
+      },
+      // Optimized for serverless
+      pool: false, // Disable connection pooling
+      maxConnections: 1,
+      maxMessages: 1,
+      rateDelta: 1000,
+      rateLimit: 1,
+      // Reduced timeouts for serverless
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 5000, // 5 seconds
+      socketTimeout: 10000, // 10 seconds
+      debug: false,
+      logger: false,
+    });
 
-    // Process the uploaded file if it exists
-    if (req.file) {
-      fileBuffer = req.file.buffer;
-      fileName = req.file.originalname;
-      console.log(`File uploaded: ${fileName}, Size: ${req.file.size} bytes`);
-    }
+    // Prepare attachments
+    const attachments = file
+      ? [
+          {
+            filename: file.name,
+            content: Buffer.from(file.content, "base64"),
+          },
+        ]
+      : [];
 
-    // Create transporter
-    const transporter = createTransporter();
-
-    // Test connection before sending
-    try {
-      await transporter.verify();
-      console.log("Transporter verified before sending email");
-    } catch (verifyError) {
-      console.error("Transporter verification failed:", verifyError);
-      return res.status(500).json({
-        message: "Email service unavailable. Please try again later.",
-      });
-    }
-
-    // Prepare the email content
     const mailOptions = {
       from: process.env.GMAIL_USER,
       to: "micronanornd@paruluniversity.ac.in",
@@ -184,45 +137,37 @@ router.post("/", upload.single("idProof"), async (req, res) => {
           </div>
         </div>
       `,
-      attachments: fileBuffer
-        ? [
-            {
-              filename: fileName,
-              content: fileBuffer,
-            },
-          ]
-        : [],
+      attachments: attachments,
     };
 
-    // Send email with timeout handling
-    console.log("Attempting to send email...");
+    // Send email with proper error handling for serverless
+    await new Promise((resolve, reject) => {
+      transporter.sendMail(mailOptions, (error, info) => {
+        // Always close the transporter
+        transporter.close();
 
-    const emailPromise = transporter.sendMail(mailOptions);
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Email send timeout")), 30000); // 30 second timeout
+        if (error) {
+          reject(error);
+        } else {
+          resolve(info);
+        }
+      });
     });
 
-    await Promise.race([emailPromise, timeoutPromise]);
-
     console.log("Email sent successfully");
-    res.status(200).json({ message: "Email sent successfully" });
+    return res.status(200).json({ message: "Email sent successfully" });
   } catch (error) {
-    // Enhanced error logging
     console.error("Error sending email:", {
       message: error.message,
       code: error.code,
-      command: error.command,
-      response: error.response,
-      responseCode: error.responseCode,
       stack: error.stack,
       timestamp: new Date().toISOString(),
     });
 
-    // Send appropriate error response
     let errorMessage = "Failed to send email";
     let statusCode = 500;
 
-    if (error.code === "ETIMEDOUT" || error.message === "Email send timeout") {
+    if (error.code === "ETIMEDOUT") {
       errorMessage = "Email service timeout. Please try again later.";
       statusCode = 504;
     } else if (error.code === "EAUTH") {
@@ -233,7 +178,7 @@ router.post("/", upload.single("idProof"), async (req, res) => {
       statusCode = 503;
     }
 
-    res.status(statusCode).json({
+    return res.status(statusCode).json({
       message: errorMessage,
       error:
         process.env.NODE_ENV === "development"
@@ -241,6 +186,4 @@ router.post("/", upload.single("idProof"), async (req, res) => {
           : "Internal server error",
     });
   }
-});
-
-module.exports = router;
+}
